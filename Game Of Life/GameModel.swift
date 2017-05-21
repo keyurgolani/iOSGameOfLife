@@ -63,7 +63,7 @@ class GameModel : NSObject, AGame {
         
     }
     
-    fileprivate func countNeighborsForCell(_ x: Int, y: Int) -> Int {
+    fileprivate func countNeighbors(_ x: Int, y: Int) -> Int {
         
         if x < 0 || x > self.width || y < 0 || y > self.height {
             return 0
@@ -200,24 +200,24 @@ class GameModel : NSObject, AGame {
             return false
         }
         
-        let neighbors = self.countNeighborsForCell(x, y: y)
+        let neighbors = self.countNeighbors(x, y: y)
         
-        //rule 1
+        // Rule 1: If an alive cell has less than 2 neighbours, it dies due to underpopulation.
         if self.presentState[x][y] && neighbors < 2 {
             return false
         }
         
-        //rule 2
-        if self.presentState[x][y] && neighbors == 2 || neighbors == 3 {
+        // Rule 2: If an alive cell has 2 or 3 neighbours, it lives on to the next generation.
+        if self.presentState[x][y] && (neighbors == 2 || neighbors == 3) {
             return true
         }
         
-        //rule 3
+        // Rule 3: If an alive cell has more than 3 neighbours, it dies due to overpopulation.
         if self.presentState[x][y]  && neighbors > 3 {
             return false
         }
         
-        //rule 4
+        // Rule 4: If a dead cell has exactly 3 neighbours, it takes birth in the next generation.
         if !self.presentState[x][y] && neighbors == 3 {
             return true
         }
@@ -225,7 +225,7 @@ class GameModel : NSObject, AGame {
         return false
     }
     
-    func updateGeneration() {
+    func nextGeneration() {
         
         for i in 0..<self.width {
             for j in 0..<self.height {

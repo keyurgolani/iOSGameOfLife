@@ -11,21 +11,21 @@ import UIKit
 class GameViewController : UIViewController {
     
     fileprivate var unitLength : Int = 20
-    fileprivate lazy var gameOfLife : GameModel = { GameModel(widthOfGrid: self.unitLength, heightOfGrid: self.unitLength) }()
-    fileprivate lazy var gameView : GameView = { GameView(gameModel: self.gameOfLife) }()
+    fileprivate lazy var gameModel : GameModel = { GameModel(widthOfGrid: self.unitLength, heightOfGrid: self.unitLength) }()
+    fileprivate lazy var gameView : GameView = { GameView(gameModel: self.gameModel) }()
     fileprivate var isPlaying = false
-    fileprivate var framesPerSecond : Double = 3
+    fileprivate var fps : Double = 3
     fileprivate var generationController : Timer?
     fileprivate let generationNumberLabel = UILabel()
-    fileprivate let framesPerSecondLabel = UILabel()
-    fileprivate let sizeOfGridLabel = UILabel()
+    fileprivate let fpsLabel = UILabel()
+    fileprivate let gridSizeLabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.configureView()
         
         //model will handle view updates
-        self.gameOfLife.generationWasBorn = { generationNumber in
+        self.gameModel.generationWasBorn = { generationNumber in
             self.generationNumberLabel.text = "\(generationNumber)"
             self.gameView.setNeedsDisplay()
         }
@@ -39,14 +39,14 @@ class GameViewController : UIViewController {
         
         self.view.addSubview(self.gameView)
         
-        let gameOfLifeViewConstraints : [NSLayoutConstraint] = [
+        let gameModelViewConstraints : [NSLayoutConstraint] = [
             self.gameView.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor),
             self.gameView.leftAnchor.constraint(equalTo: self.view.leftAnchor),
             self.gameView.rightAnchor.constraint(equalTo: self.view.rightAnchor),
             self.gameView.heightAnchor.constraint(equalTo: self.view.widthAnchor)
         ]
         
-        self.view.addConstraints(gameOfLifeViewConstraints)
+        self.view.addConstraints(gameModelViewConstraints)
         
         let activitySwich = UISwitch()
         activitySwich.translatesAutoresizingMaskIntoConstraints = false
@@ -62,62 +62,62 @@ class GameViewController : UIViewController {
         
         self.view.addConstraints(activitySwitchConstraints)
         
-        let framesPerSecondSliderLabel = UILabel()
+        let fpsSliderLabel = UILabel()
         
-        framesPerSecondSliderLabel.translatesAutoresizingMaskIntoConstraints = false
+        fpsSliderLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        framesPerSecondSliderLabel.text = "Frames per second: "
-        framesPerSecondSliderLabel.font = UIFont.systemFont(ofSize: 14.0, weight: UIFontWeightBold)
-        framesPerSecondSliderLabel.numberOfLines = 0
-        framesPerSecondSliderLabel.lineBreakMode = .byWordWrapping
-        framesPerSecondSliderLabel.textAlignment = .center
+        fpsSliderLabel.text = "Frames per second: "
+        fpsSliderLabel.font = UIFont.systemFont(ofSize: 14.0, weight: UIFontWeightBold)
+        fpsSliderLabel.numberOfLines = 0
+        fpsSliderLabel.lineBreakMode = .byWordWrapping
+        fpsSliderLabel.textAlignment = .center
         
-        self.view.addSubview(framesPerSecondSliderLabel)
+        self.view.addSubview(fpsSliderLabel)
         
-        let framesPerSecondSlider = UISlider()
-        framesPerSecondSlider.translatesAutoresizingMaskIntoConstraints = false
+        let fpsSlider = UISlider()
+        fpsSlider.translatesAutoresizingMaskIntoConstraints = false
         
-        framesPerSecondSlider.minimumValue = 1
-        framesPerSecondSlider.maximumValue = 50
+        fpsSlider.minimumValue = 1
+        fpsSlider.maximumValue = 50
         
-        framesPerSecondSlider.value = Float(self.framesPerSecond)
-        framesPerSecondSlider.addTarget(self, action: #selector(GameViewController.framesPerSecondChanged(_:)), for: .valueChanged)
+        fpsSlider.value = Float(self.fps)
+        fpsSlider.addTarget(self, action: #selector(GameViewController.fpsChanged(_:)), for: .valueChanged)
         
-        self.view.addSubview(framesPerSecondSlider)
+        self.view.addSubview(fpsSlider)
         
-        self.framesPerSecondLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.framesPerSecondLabel.font = UIFont.systemFont(ofSize: 14.0, weight: UIFontWeightBold)
-        self.framesPerSecondLabel.textAlignment = .center
-        self.framesPerSecondLabel.text = "\(Int(self.framesPerSecond))"
+        self.fpsLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.fpsLabel.font = UIFont.systemFont(ofSize: 14.0, weight: UIFontWeightBold)
+        self.fpsLabel.textAlignment = .center
+        self.fpsLabel.text = "\(Int(self.fps))"
         
-        self.view.addSubview(self.framesPerSecondLabel)
+        self.view.addSubview(self.fpsLabel)
         
-        let framesPerSecondSliderLabelConstraints : [NSLayoutConstraint] = [
-            framesPerSecondSliderLabel.centerYAnchor.constraint(equalTo: framesPerSecondSlider.centerYAnchor),
-            framesPerSecondSliderLabel.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 15),
-            framesPerSecondSliderLabel.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.2),
-            framesPerSecondSliderLabel.heightAnchor.constraint(equalToConstant: 60)
+        let fpsSliderLabelConstraints : [NSLayoutConstraint] = [
+            fpsSliderLabel.centerYAnchor.constraint(equalTo: fpsSlider.centerYAnchor),
+            fpsSliderLabel.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 15),
+            fpsSliderLabel.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.2),
+            fpsSliderLabel.heightAnchor.constraint(equalToConstant: 60)
         ]
         
-        self.view.addConstraints(framesPerSecondSliderLabelConstraints)
+        self.view.addConstraints(fpsSliderLabelConstraints)
         
-        let framesPerSecondLabelConstraints : [NSLayoutConstraint] = [
-            self.framesPerSecondLabel.centerYAnchor.constraint(equalTo: framesPerSecondSlider.centerYAnchor),
-            self.framesPerSecondLabel.heightAnchor.constraint(equalTo: framesPerSecondSlider.heightAnchor),
-            self.framesPerSecondLabel.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -15),
-            self.framesPerSecondLabel.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.2)
+        let fpsLabelConstraints : [NSLayoutConstraint] = [
+            self.fpsLabel.centerYAnchor.constraint(equalTo: fpsSlider.centerYAnchor),
+            self.fpsLabel.heightAnchor.constraint(equalTo: fpsSlider.heightAnchor),
+            self.fpsLabel.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -15),
+            self.fpsLabel.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.2)
         ]
         
-        self.view.addConstraints(framesPerSecondLabelConstraints)
+        self.view.addConstraints(fpsLabelConstraints)
         
-        let framesPerSecondSliderConstraints : [NSLayoutConstraint] = [
-            framesPerSecondSlider.leftAnchor.constraint(equalTo: framesPerSecondSliderLabel.rightAnchor, constant: 15),
-            framesPerSecondSlider.topAnchor.constraint(equalTo: activitySwich.bottomAnchor, constant: 15),
-            framesPerSecondSlider.rightAnchor.constraint(equalTo: self.framesPerSecondLabel.leftAnchor, constant: -15),
-            framesPerSecondSlider.heightAnchor.constraint(equalTo: framesPerSecondSliderLabel.heightAnchor)
+        let fpsSliderConstraints : [NSLayoutConstraint] = [
+            fpsSlider.leftAnchor.constraint(equalTo: fpsSliderLabel.rightAnchor, constant: 15),
+            fpsSlider.topAnchor.constraint(equalTo: activitySwich.bottomAnchor, constant: 15),
+            fpsSlider.rightAnchor.constraint(equalTo: self.fpsLabel.leftAnchor, constant: -15),
+            fpsSlider.heightAnchor.constraint(equalTo: fpsSliderLabel.heightAnchor)
         ]
         
-        self.view.addConstraints(framesPerSecondSliderConstraints)
+        self.view.addConstraints(fpsSliderConstraints)
         
         let generationLabel = UILabel()
         generationLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -184,7 +184,7 @@ class GameViewController : UIViewController {
         let sizeOfGridSliderLabelConstraints : [NSLayoutConstraint] = [
             sizeOfGridSliderLabel.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 15),
             sizeOfGridSliderLabel.heightAnchor.constraint(equalToConstant: 60),
-            sizeOfGridSliderLabel.topAnchor.constraint(equalTo: framesPerSecondSlider.bottomAnchor, constant: 15),
+            sizeOfGridSliderLabel.topAnchor.constraint(equalTo: fpsSlider.bottomAnchor, constant: 15),
             sizeOfGridSliderLabel.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.2)
         ]
         
@@ -199,21 +199,21 @@ class GameViewController : UIViewController {
         sizeOfGridSlider.value = Float(self.unitLength)
         sizeOfGridSlider.addTarget(self, action: #selector(GameViewController.sizeOfGridChanged(_:)), for: .valueChanged)
         
-        self.sizeOfGridLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.sizeOfGridLabel.font = UIFont.systemFont(ofSize: 14.0, weight: UIFontWeightBold)
-        self.sizeOfGridLabel.textAlignment = .center
-        self.sizeOfGridLabel.text = "\(self.unitLength)"
+        self.gridSizeLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.gridSizeLabel.font = UIFont.systemFont(ofSize: 14.0, weight: UIFontWeightBold)
+        self.gridSizeLabel.textAlignment = .center
+        self.gridSizeLabel.text = "\(self.unitLength)"
         
-        self.view.addSubview(self.sizeOfGridLabel)
+        self.view.addSubview(self.gridSizeLabel)
         
-        let sizeOfGridLabelConstraints : [NSLayoutConstraint] = [
-            self.sizeOfGridLabel.centerYAnchor.constraint(equalTo: sizeOfGridSliderLabel.centerYAnchor),
-            self.sizeOfGridLabel.heightAnchor.constraint(equalTo: sizeOfGridSliderLabel.heightAnchor),
-            self.sizeOfGridLabel.widthAnchor.constraint(equalTo: sizeOfGridSliderLabel.widthAnchor),
-            self.sizeOfGridLabel.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -15)
+        let gridSizeLabelConstraints : [NSLayoutConstraint] = [
+            self.gridSizeLabel.centerYAnchor.constraint(equalTo: sizeOfGridSliderLabel.centerYAnchor),
+            self.gridSizeLabel.heightAnchor.constraint(equalTo: sizeOfGridSliderLabel.heightAnchor),
+            self.gridSizeLabel.widthAnchor.constraint(equalTo: sizeOfGridSliderLabel.widthAnchor),
+            self.gridSizeLabel.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -15)
         ]
         
-        self.view.addConstraints(sizeOfGridLabelConstraints)
+        self.view.addConstraints(gridSizeLabelConstraints)
         
         self.view.addSubview(sizeOfGridSlider)
         
@@ -221,7 +221,7 @@ class GameViewController : UIViewController {
             
             sizeOfGridSlider.centerYAnchor.constraint(equalTo: sizeOfGridSliderLabel.centerYAnchor),
             sizeOfGridSlider.leftAnchor.constraint(equalTo: sizeOfGridSliderLabel.rightAnchor, constant: 15),
-            sizeOfGridSlider.rightAnchor.constraint(equalTo: self.sizeOfGridLabel.leftAnchor, constant: -15)
+            sizeOfGridSlider.rightAnchor.constraint(equalTo: self.gridSizeLabel.leftAnchor, constant: -15)
         ]
         
         self.view.addConstraints(sizeOfGridSliderConstraints)
@@ -237,28 +237,38 @@ class GameViewController : UIViewController {
     
     func resetModel(_ sender: AnyObject? = nil) {
         
-        if self.isPlaying {
-            self.toggleActivity()
-        }
-        self.gameOfLife.initializeState()
+        let resetAlert = UIAlertController(title: "Reset", message: "All live cells will be cleared!", preferredStyle: UIAlertControllerStyle.alert)
+        
+        resetAlert.addAction(UIAlertAction(title: "Ok", style: .default, handler: { (action: UIAlertAction!) in
+            if self.isPlaying {
+                self.toggleActivity()
+            }
+            self.gameModel.initializeState()
+        }))
+        
+        resetAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
+            // Do Nothing!
+        }))
+        
+        present(resetAlert, animated: true, completion: nil)
     }
     
     func instantiateController(_ sender: AnyObject? = nil) {
         
-        self.generationController = Timer.scheduledTimer(timeInterval: 1/self.framesPerSecond, target: self, selector: #selector(GameViewController.updateGeneration(_:)), userInfo: nil, repeats: true)
+        self.generationController = Timer.scheduledTimer(timeInterval: 1/self.fps, target: self, selector: #selector(GameViewController.nextGeneration(_:)), userInfo: nil, repeats: true)
         
     }
     
-    func updateGeneration(_ sender: AnyObject? = nil) {
+    func nextGeneration(_ sender: AnyObject? = nil) {
         
-        self.gameOfLife.updateGeneration()
+        self.gameModel.nextGeneration()
     }
     
     func toggleActivity(_ sender: AnyObject? = nil) {
         
         if self.isPlaying {
             self.generationController?.invalidate()
-            self.gameView.enableInteraction()
+            self.gameView.enableInput()
             
             for view in self.view.subviews {
                 if view is UISwitch {
@@ -268,20 +278,20 @@ class GameViewController : UIViewController {
             
         } else {
             self.instantiateController()
-            self.gameView.disableInteraction()
+            self.gameView.disableInput()
         }
         
         self.isPlaying = !self.isPlaying
         
     }
     
-    func framesPerSecondChanged(_ sender: UISlider) {
+    func fpsChanged(_ sender: UISlider) {
         
-        self.framesPerSecond = Double(Int(sender.value))
-        self.framesPerSecondLabel.text = "\(Int(self.framesPerSecond))"
-        if 1/self.framesPerSecond != self.generationController?.timeInterval && self.isPlaying {
+        self.fps = Double(Int(sender.value))
+        self.fpsLabel.text = "\(Int(self.fps))"
+        if 1/self.fps != self.generationController?.timeInterval && self.isPlaying {
             self.generationController?.invalidate()
-            self.generationController = Timer.scheduledTimer(timeInterval: 1/self.framesPerSecond, target: self, selector: #selector(GameViewController.updateGeneration(_:)), userInfo: nil, repeats: true)
+            self.generationController = Timer.scheduledTimer(timeInterval: 1/self.fps, target: self, selector: #selector(GameViewController.nextGeneration(_:)), userInfo: nil, repeats: true)
         }
         
     }
@@ -294,11 +304,11 @@ class GameViewController : UIViewController {
         }
         
         self.unitLength = Int(sender.value)
-        self.sizeOfGridLabel.text = "\(self.unitLength)"
+        self.gridSizeLabel.text = "\(self.unitLength)"
         
-        if self.unitLength != self.gameOfLife.height || self.unitLength != self.gameOfLife.width {
+        if self.unitLength != self.gameModel.height || self.unitLength != self.gameModel.width {
             print(self.unitLength)
-            self.gameOfLife.setDimensionsOfGrid(unitLength: unitLength)
+            self.gameModel.setDimensionsOfGrid(unitLength: unitLength)
             
         }
     }

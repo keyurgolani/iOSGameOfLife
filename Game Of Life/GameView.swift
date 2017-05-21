@@ -34,7 +34,7 @@ class GameView : UIView {
         self.model = model
         super.init(frame: CGRect.zero)
         self.backgroundColor = UIColor(rgb: 0x3B3E43)
-        self.enableInteraction()
+        self.enableInput()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -97,14 +97,14 @@ class GameView : UIView {
         
     }
     
-    func enableInteraction() {
+    func enableInput() {
         if self.gestureRecognizers == nil {
             self.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(GameView.didTapCell(_:))))
             self.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(GameView.didPanOverCell(_:))))
         }
     }
     
-    func disableInteraction() {
+    func disableInput() {
         self.gestureRecognizers?.removeAll()
         self.gestureRecognizers = nil
     }
